@@ -1,0 +1,48 @@
+\documentclass{scrartcl}
+\usepackage{leopackages}
+\usepackage{leoshortcuts}
+
+\newcommand*{\sectionpostamble}{}
+\newcommand*{\teacher}[1]{%
+      \def\sectionpostamble{#1}%
+}
+
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+  [\normalfont\small\itshape\raggedleft\sectionpostamble
+  \global\let\sectionpostamble\relax]
+
+\usepackage{blindtext}
+
+
+\title{Project 1}
+\subtitle{'Bounce' N-body solver}
+\author{Leopold Talirz}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{Class outline}
+The two main tasks of an N-body solver are
+\begin{enumerate}
+    \item to calculate the forces for a given point in phase space and 
+    \item to update the phase space coordinates using the forces as well as
+        the kinetic energy.
+\end{enumerate}
+
+Since our solver should be able to treat different kinds of interactions,
+the forces will be modularized in two levels of abstraction: 
+First the kind of potential (two, three, \ldots N-body) and then the
+actual form of the potential.
+
+Furthermore, we will need to compile the code on CPU and GPU architectures. 
+We will use preprocessor instructions to swtich between the different
+implementations for the different architectures (?).
+
+
+
+
+\end{document}

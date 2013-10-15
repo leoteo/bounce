@@ -1,0 +1,25 @@
+CC = clang++
+LD = clang++
+
+ifdef debug
+CFLAGS = -O0 -g
+else
+CFLAGS = -O1
+endif
+
+
+# DO NOT USE __ACCELERATE__ as it is used internally by Apple!
+#CFLAGS += -D__EXTLIB__ACCELERATE  
+#CFLAGS += -I/opt/local/include
+##CFLAGS += -framework Accelerate
+#
+## boost
+#LFLAGS += -L/opt/local/lib
+#LFLAGS += -lboost_program_options-mt -lboost_regex-mt 
+#LFLAGS += -lboost_system-mt -lboost_filesystem-mt
+#
+#
+##LFLAGS += -lblas -llapack -lfftw3
+#LFLAGS += -framework Accelerate -lfftw3
+#LFLAGS += -lblitz 
+
