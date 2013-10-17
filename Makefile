@@ -12,7 +12,7 @@ CFLAGS  += -I ./$(INCDIR)
 
 ###### Dependencies
 UTILS       = ArgumentParser Timer
-LIB         = bounce forces integrator parsers state
+LIB         = bounce forces integrator parsers state 
 LIB        += xyz
 #
 COMPONENTS = $(UTILS) $(LIB)
@@ -42,7 +42,7 @@ $(LIBDIR)/%.o:: $(LIBDIR)/%.cpp $(INCDIR)/%.hpp
 %.o:: %.cpp $(INCDEP)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-bounce: examples/ex02.o $(LIBDEP)
+bounce: $(LIBDIR)/main.o $(LIBDEP)
 	$(LD) -o bin/bounce $^ $(LFLAGS)
 
 $(EXAMPLES): %: examples/%.o $(LIBDEP)

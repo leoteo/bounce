@@ -4,6 +4,7 @@
 #include "xyz.hpp"
 #include "types.hpp"
 #include <fstream>
+#include <iostream>
 using namespace types;
 
 

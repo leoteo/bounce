@@ -9,8 +9,6 @@
 #include <vector>
 #include <complex>
 
-#include "boost/multi_array.hpp"
-
 namespace types {
 
 // Basic types
@@ -64,14 +62,6 @@ class VecVec3d {
 typedef std::list<size_t> list_t;
 typedef list_t::iterator list_it_t;
 
-
-//// Arrays
-//typedef boost::multi_array<real_t, 1> vec_t;
-//typedef vec_t::index vec_index_t;
-//typedef boost::multi_array<real_t, 2> mat_t;
-//typedef mat_t::index mat_index_t;
-//
-////typedef boost::extents extent_t;
 
 }
 

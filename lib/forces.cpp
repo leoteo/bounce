@@ -7,6 +7,8 @@
 #include "types.hpp"
 using namespace types;
 
+Force::~Force() {}
+
 void LennardJones::add(State &s){
 
     size_t i,j,d, N = s.N;
@@ -21,8 +23,10 @@ void LennardJones::add(State &s){
                 pow6 = pow(sigma/r, 6.0);
                 pow12 = pow(sigma/r, 12.0);
 
+                // Update potential energy
                 s.ePot += 4.0*epsilon*(pow12 - pow6);
 
+                // Update forces
                 f = -4.0*epsilon*(
                      -12.0*pow12 +6.0*pow6
                     ) /r;

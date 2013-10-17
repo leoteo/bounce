@@ -34,7 +34,7 @@ class VelocityVerlet : public Integrator {
     public:
         VelocityVerlet(real_t dt, size_t nstep) : 
             Integrator(dt,nstep, integrator::VelocityVerlet) {}
-        ~VelocityVerlet();
+        ~VelocityVerlet() {}
         void dostep(State &s);
 };
 

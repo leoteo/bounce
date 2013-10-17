@@ -29,7 +29,7 @@ class LennardJones : public Force {
     public:
         LennardJones(real_t sigma, real_t epsilon, real_t rcut):
             sigma(sigma), epsilon(epsilon), rcut(rcut), type(force::LennardJones) {}
-        ~LennardJones();
+        ~LennardJones() {}
         void add(State &s);
 };
 

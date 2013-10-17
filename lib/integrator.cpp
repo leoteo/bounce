@@ -6,6 +6,8 @@
 #include "types.hpp"
 using namespace types;
 
+Integrator::~Integrator() {}
+
 void VelocityVerlet::dostep(State& s){
         size_t i, r;
         size_t N = s.N;
