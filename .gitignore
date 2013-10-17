@@ -11,3 +11,12 @@
 *.lai
 *.la
 *.a
+
+# Latex auxiliary files
+*.aux
+*.log
+*.toc
+
+# Vim swap files
+*.swo
+*.swp

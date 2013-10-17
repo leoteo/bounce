@@ -16,8 +16,8 @@
 \usepackage{blindtext}
 
 
-\title{Project 1}
-\subtitle{'Bounce' N-body solver}
+\title{Bounce}
+\subtitle{Project 1 - N-body solver}
 \author{Leopold Talirz}
 
 \begin{document}
@@ -25,7 +25,8 @@
 \maketitle
 \tableofcontents
 
-\chapter{Class outline}
+\section{General considerations}
+
 The two main tasks of an N-body solver are
 \begin{enumerate}
     \item to calculate the forces for a given point in phase space and 
@@ -42,6 +43,114 @@ Furthermore, we will need to compile the code on CPU and GPU architectures.
 We will use preprocessor instructions to swtich between the different
 implementations for the different architectures (?).
 
+\subsection{Appropriate data structure}
+So, how would the optimal data structure look like?
+The data sets that grow linearly with the number of particles $N$
+are positions, velocities, forces and possibly neighbor lists%
+\footnote{which may grow faster}, 
+all of which are per-particle quantities.
+It therefore seems reasonable to set up a
+\verb|Particle| class, which is then instantiated as needed.
+
+While this approach nicely groups the data,
+there are performance drawbacks when compared to
+storing each of these data sets in separate large arrays.
+
+First, the data sets are not contiguous anymore.
+This reduces cache efficiency in loops where only one 
+dataset is required, e.g. the positions when building up
+the neighbor lists.
+Furthermore, we cannot make use of BLAS and LAPACK for efficient
+vector and matrix operations. 
+While the latter may be of great importance for other applications,
+the operations performed by an N-body solver can typically not be recast
+into standard linear algebra anyhow.
+And finally, it may be detrimental to vectorization.
+
+Second, $O(N)$ \verb|Particle| objects means $O(N)$ constructor
+and destructor calls, which can be expensive in complex class trees.
+In particular, virtual functions should be avoided.
+
+All in all, it seems beneficial to abstain from 
+grouping data in a \verb|Particle| class.
+This still leaves the question of which containers to use.
+
+\subsection{Appropriate containers}
+
+When storing vectors and matrices, the tradeoff is between safety and
+flexibility. And there are lots of options at hand:
+
+\begin{enumerate}
+    \item \emph{The 'boxed' C++ way:} Using the safe and fast containers
+        of the standard template library, 
+        the Multiarray component of the \verb|boost| library
+        or the \verb|thrust| library, which already aims at a host/device
+        architecture.
+
+        There are some drawbacks, however. 
+        Since we aren't allowed to use C++11, intialization with STL containers
+        is not very elegant. Using Multiarrays or thrust means adding a 
+        library dependency.
+    \item \emph{C-style arrays:} Clean syntax and flexibility 
+        at the cost of reduced safety and having to take care of 
+        memory management. This is certainly feasible and probably the 
+        easiest solution.
+    \item \emph{The C++ way:} Implementing the container yourself.
+        This takes some extra time to code, but in the end offers a maximum of
+        flexibility together with the possibility to make it safe and convenient.
+\end{enumerate}
+
+The only two non-standard containers required here are:
+\begin{itemize}
+    \item An $N$-dimensional vector of $3$-dimensional vectors to 
+        store positions, velocities and forces.
+
+        Within one such container, the coordinates should probably be grouped
+        by particle and not by space direction. 
+        It may be assumed that the number of particles $N$ remains constant
+        in the course of the simulation.
+        Helper functions to reset the container would be helpful.
+
+        This can be achieved wihout problems by 1., 2. and 3.
+        A vector of vectors may however break contiguity,
+        since the 3d vectors would be allocated one-by-one.
+        One should thus rely on a 2d array (2.) or a 1d vector (3.).
+
+    \item An $N$-dimensional vector of lists with variable length
+        to store the Verlet list of neighboring particles.
+
+        The resizeable list is obviously a bit more tricky and strongly
+        suggests to use \verb|std::list|, leaving options 1. and 3. 
+        for this container.
+\end{itemize}
+
+\subsection{Parsing input}
+
+Providing parameters via the command line works fine as long as there aren't
+more than two or three.
+An N-body solver with sensible flexibility needs more than that.
+An minimalistic set of input parameters is listed in Table \ref{tab:input}.
+
+\begin{table}
+    \centering
+\begin{tabular}[h!]{cc}
+    Symbol & Description \\\hline
+    dt & time step \\
+    t & total time \\
+    f & the type of interaction\\
+    lj\_sigma & Lennard-Jones $\sigma$ \\
+    lj\_epsilon & Lennard-Jones $\varepsilon$\\
+    lj\_rcut & Lennard-Jones cutoff radius\\
+    fil\_m & file with masses \\
+    fil\_x & file with initial positions\\
+    fil\_v & file with initial velocities
+\end{tabular}
+    \caption{Input parameters for a calculation.}
+    \label{tab:input}
+\end{table}
+
+We will therefore discard the provided \verb|ArgumentParser.h| and move
+to the much more powerful \verb|boost::program_options|.
 
 
 
