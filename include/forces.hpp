@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 using namespace types;
-#include "state.hpp"
+#include "decl.hpp"
 
 
 namespace force {
@@ -15,10 +15,11 @@ namespace force {
 
 class Force {
     public:
-        virtual void add(&State s) =0;
+        virtual void add(State &s) =0;
+        virtual ~Force() =0;
 };
 
-class LennardJones : Force {
+class LennardJones : public Force {
     private:
         real_t sigma;
         real_t epsilon;
@@ -27,8 +28,9 @@ class LennardJones : Force {
 
     public:
         LennardJones(real_t sigma, real_t epsilon, real_t rcut):
-            sigma(sigma), epsilon(epsilon), rcut(rcut), type(LennardJones) {}
-        virtual flag_t update(&State s);
+            sigma(sigma), epsilon(epsilon), rcut(rcut), type(force::LennardJones) {}
+        ~LennardJones();
+        void add(State &s);
 };
 
 #endif

@@ -5,28 +5,29 @@
 #define XYZ_HPP
 
 #include "types.hpp"
-using namespace t;
+using namespace types;
 
 class XyzFile {
     private:
-        const std::stringstream & toStringStream() const;
+        string_t to_stringstream() const;
+        string_t fname;
 
     public:
-        string_t fname;
 
         size_t N;                    /** number of atoms */
         string_t comment;            /** comment (2nd line) */
         vec_t< string_t > symbols;   /** atomic symbols */
-        vex_t< real_t > m;          /** TODO: atomic masses derived from symbols*/
+        vec_t< real_t > m;          /** TODO: atomic masses derived from symbols*/
         VecVec3d x;                 /** positions */
 
         XyzFile() {}
         XyzFile(size_t N, const string_t& comment, const vec_t< real_t > &m, 
                 const VecVec3d &x);
         
-        void write(string_t &fn, std::ofstream::mode m);
-        void write(string_t &fname);
-        void append(string_t &fname);
-}
+        void read(const string_t &fn);
+        void write(const string_t &fn, std::ios_base::openmode m);
+        void write(const string_t &fn);
+        void append(const string_t &fn);
+};
 
 #endif

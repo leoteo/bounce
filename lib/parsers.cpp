@@ -2,6 +2,7 @@
  * parsers.cpp
  */
 #include <string>
+#include <fstream>
 #include "parsers.hpp"
 #include "integrator.hpp"
 #include "state.hpp"
@@ -48,8 +49,8 @@ InputParser::InputParser(int ac, char* av[]) : ac(ac), av(av){
 
     // If specified, try to parse conig file
     if (vm.count("input-file")){
-        std::ifstream ifs(input_file.c_str());
-       if(!ifs) std::cout << "Error: cannot access " << input_file << "\n";
+       std::ifstream ifs(input_file.c_str());
+       if(!ifs)  std::cout << "Error: cannot access " << input_file << "\n";
        store(parse_config_file(ifs, desc), vm);
        notify(vm);
     }
@@ -61,29 +62,27 @@ InputParser::InputParser(int ac, char* av[]) : ac(ac), av(av){
         std::cout << desc << "\n";
     } else if (vm.count("version")) {
         std::cout << "Oct 16th 2013\n";
-    } else {
-        return true;
-    }
+    } 
 
 }
 
 
-void InputParser::init(Integrator &i, State &s, OutputParser &o){
+void InputParser::init(Integrator *i, State &s, OutputParser &o){
 
     // Setting up the integrator
     if(vm["int"].as< string_t >() == "vv"){
-        i = VelocityVerlet(
+        i = new VelocityVerlet(
                vm["dt"].as< real_t >(), 
-               size_t(vm["t"].as< real_t >() / s.dt)
+               size_t(vm["t"].as< real_t >() / vm["dt"].as< real_t>())
             );
     }
 
     // Setting up the state
 
-    vec_t< Force > forces;
+    vec_t< Force* > forces;
     if(vm["f"].as< string_t >() == "lj"){
         forces.push_back(
-            LennardJones(
+          new LennardJones(
                 vm["lj_sigma"].as< real_t >(),
                 vm["lj_epsilon"].as< real_t >(),
                 vm["lj_rcut"].as< real_t >()
@@ -91,12 +90,12 @@ void InputParser::init(Integrator &i, State &s, OutputParser &o){
         );
     }
 
-    if( vm.cont("fil_xyz") ){
-        XyzFile xyz();
+    if( vm.count("fil_xyz") ){
+        XyzFile xyz = XyzFile();
         xyz.read(vm["fil_xyz"].as< string_t >());
 
         // TODO: add initial temperature and draw velocities from gaussian dist.
-        s = State(xyz.N, xyz.x, VecVec3d(xyz.N, 0.0), xyz.m, forces)
+        s = State(xyz.N, xyz.x, VecVec3d(xyz.N, 0.0), xyz.m, forces);
     }
     else {
         // At the moment we don't support the fil_m fil_x fil_v
@@ -108,10 +107,10 @@ void InputParser::init(Integrator &i, State &s, OutputParser &o){
 
 }
 
-void OutputParser::write(const Integrator &i, const State &s){
-    if (i.step % nwrite == 0){
+void OutputParser::write(const Integrator *i, const State &s){
+    if (i->get_step() % nwrite == 0){
         std::stringstream ss;
-        ss << "step = " << i.step << ", "
+        ss << "step = " << i->get_step() << ", "
            << "eKin = " << s.eKin << ", "
            << "ePot = " << s.ePot << ", "
            << "eTot = " << s.eTot << "\n";

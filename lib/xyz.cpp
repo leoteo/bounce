@@ -3,17 +3,18 @@
  */
 #include "xyz.hpp"
 #include "types.hpp"
+#include <fstream>
 using namespace types;
 
 
-bool XyzFile::read(string_t &fn){
+void XyzFile::read(const string_t &fn){
     fname = fn;
 
     std::ifstream file;
     file.open(fname.c_str());
 
     if (file.is_open()) {
-        String line;
+        string_t line;
         std::stringstream ss;
 
         // Read number of atoms
@@ -37,54 +38,53 @@ bool XyzFile::read(string_t &fn){
 
             if(!file.good()){
                 std::cout << "Error: Unexpected end of " << fname << "\n";
-                return false;
+                break;
             }
 
             std::getline(file,line);
             ss << line;
-            ss >> symbols(i) >> x(i,0)x >> x(i,1) >> x(i,2);
+            ss >> symbols(i) >> x(i,0) >> x(i,1) >> x(i,2);
             // TODO: translate symbols into masses
 
         }
+    }
 
-        return true;
 }
 
-const std::stringstream & toStringStream(){
+string_t XyzFile::to_stringstream() const {
     std::stringstream ss;
 
     ss << "   " << N << std::endl;
     ss << comment;
 
     for(size_t i=0; i<N; ++i){
-        ss << symbol(i) 
+        ss << symbols(i) 
            << std::scientific << x(i,0)
            << std::scientific << x(i,1)
            << std::scientific << x(i,2)
            << std::endl;
     }
 
-    return ss;
+    return ss.str();
 }
 
-
-void XyzFile::write(string_t &fn, std::ofstream::mode m){
+void XyzFile::write(const string_t &fn, std::ios_base::openmode m) {
     fname = fn;
 
     std::ofstream of;
     of.open(fname.c_str(), m);
 
-    of << toStringStream().rdbuf();
+    of << to_stringstream();
 
     of.close();
 
 }
 
-void XyzFile::write(string_t &fn){
+void XyzFile::write(const string_t &fn) {
     write(fn, std::ofstream::trunc);
 }
 
-void XyzFile::append(string_t &fn){
+void XyzFile::append(const string_t &fn) {
     write(fn, std::ofstream::app);
 }
 

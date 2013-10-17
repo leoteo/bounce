@@ -5,6 +5,7 @@
 #define TYPES_HPP
 
 #include <string>
+#include <list>
 #include <vector>
 #include <complex>
 
@@ -38,6 +39,7 @@ class vec_t {
         const T&  operator() (size_t i) const {return v[i];}
               T&  operator() (size_t i)       {return v[i];}
         size_t size() const {return v.size();}
+        void push_back(const T& val) {return v.push_back(val);}
 };
 
 
@@ -49,7 +51,9 @@ class VecVec3d {
         vec_t<real_t> v;
 
     public:
+        VecVec3d() {}
         VecVec3d(size_t N) { v = vec_t<real_t>(3 * N, 0.0); }
+        VecVec3d(size_t N, real_t r) { v = vec_t<real_t>(3 * N, r); }
         const real_t&  operator() (size_t n, size_t r) const {return v(n*3 + r);}
               real_t&  operator() (size_t n, size_t r)       {return v(n*3 + r);}
         void zero() { size_t s = v.size(); for(size_t i=0; i < s; ++i) v(i) = 0.0; }      

@@ -5,9 +5,10 @@
 #define BOUNCE_HPP
 
 #include "types.hpp"
-namespace t = types;
-#include "state.hpp"
+using namespace types;
+#include "parsers.hpp"
 #include "integrator.hpp"
+#include "state.hpp"
 
 
 /**
@@ -19,14 +20,15 @@ namespace t = types;
 class Bounce {
     private:
         InputParser in;
-        Integrator integrator;
+        Integrator *integrator;
         State state;
         OutputParser out;
 
     public:
-        Bounce() {}
-        void init(const InputParser &p);
-        void calculate(){}
+        Bounce(const InputParser &p): in(p) { in.init(integrator, state, out); }
+        ~Bounce(){ delete integrator; }
+        void calculate();
 
+};
 
 #endif

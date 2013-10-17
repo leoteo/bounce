@@ -3,10 +3,11 @@
  */
 
 #include "forces.hpp"
+#include "state.hpp"
 #include "types.hpp"
 using namespace types;
 
-void LennardJones::update(State &s){
+void LennardJones::add(State &s){
 
     size_t i,j,d, N = s.N;
 
@@ -14,7 +15,7 @@ void LennardJones::update(State &s){
     real_t pow6, pow12;
     for(i=0; i < N; ++i){
         for(j=i+1; j < N; ++j) {
-            r = dist(i,j);
+            r = s.dist(i,j);
             if (r < rcut){
 
                 pow6 = pow(sigma/r, 6.0);
@@ -35,4 +36,3 @@ void LennardJones::update(State &s){
 }
 
     
-#endif

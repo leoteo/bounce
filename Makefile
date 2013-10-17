@@ -12,8 +12,10 @@ CFLAGS  += -I ./$(INCDIR)
 
 ###### Dependencies
 UTILS       = ArgumentParser Timer
+LIB         = bounce forces integrator parsers state
+LIB        += xyz
 #
-COMPONENTS = $(UTILS)
+COMPONENTS = $(UTILS) $(LIB)
 INCDEP     = $(addprefix $(INCDIR)/, $(addsuffix .hpp, $(COMPONENTS)))
 LIBDEP     = $(addprefix $(LIBDIR)/, $(addsuffix .o, $(COMPONENTS)))
 #
@@ -39,6 +41,9 @@ $(LIBDIR)/%.o:: $(LIBDIR)/%.cpp $(INCDIR)/%.hpp
 # General programs might depend on headers of the library
 %.o:: %.cpp $(INCDEP)
 	$(CC) -c $< -o $@ $(CFLAGS)
+
+bounce: examples/ex02.o $(LIBDEP)
+	$(LD) -o bin/bounce $^ $(LFLAGS)
 
 $(EXAMPLES): %: examples/%.o $(LIBDEP)
 	$(LD) -o bin/$@ $^ $(LFLAGS)

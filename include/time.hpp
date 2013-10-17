@@ -18,9 +18,7 @@ class Timer
 public:
     Timer(){ gettimeofday(&t_start,  &t_zone); }
 	
-	void start(){
-        gettimeofday(&t_start,  &t_zone);
-    }
+	void start(){ gettimeofday(&t_start,  &t_zone); }
 	
 	double stop() {
 		gettimeofday(&t_end,  &t_zone);
@@ -32,7 +30,7 @@ public:
 		return (t_tmp.tv_usec  - t_start.tv_usec)*1e-6  + (t_tmp.tv_sec  - t_start.tv_sec);
 	}
 
-    void print() {
-        std::cout << "t = " << read() << "s\n";
-    }
+    void print() { std::cout << "t = " << read() << "s\n"; }
 };
+
+#endif
