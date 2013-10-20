@@ -19,6 +19,7 @@ class State {
 
         real_t ePot;      /** Potential energy */
         real_t eKin;      /** Kinetic energy */
+        real_t temp;      /** Temperature */
         real_t eTot;      /** Total energy */
         size_t N;         /** Number of particles */
 
@@ -33,23 +34,20 @@ class State {
             ePot(0.0),
             eKin(0.0),
             eTot(0.0),
-            N(N) 
+            N(N),
+            cell(vec_t<real_t>(3,1.0)) 
                 {}
-        State(size_t N, VecVec3d x, VecVec3d v, vec_t<real_t> m, vec_t<Force*> forces) :
-            x(x),
-            v(v),
-            f(VecVec3d(N)),
-            forces(forces),
-            m(m),
-            ePot(0.0),
-            eKin(0.0),
-            eTot(0.0),
-            N(N) 
-                {}
+        State(size_t N,                /** to be used from xyz file */
+              VecVec3d x, 
+              vec_t<real_t> m, 
+              vec_t<Force*> forces, 
+              vec_t<real_t> cell,
+              real_t t0); 
         ~State(){ for(size_t i; i<forces.size(); ++i) delete forces(i); }
 
         inline real_t dist(size_t i, size_t j) const;
         inline real_t pbc(real_t d, size_t dim) const;
+        inline void draw_v(real_t t0);
         
 };
 

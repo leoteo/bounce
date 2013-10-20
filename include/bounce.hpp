@@ -19,14 +19,19 @@ using namespace types;
  */
 class Bounce {
     private:
-        InputParser in;
-        Integrator *integrator;
-        State state;
-        OutputParser out;
+        const InputParser* in;
+        Integrator* integrator;
+        State* state;
+        OutputParser* out;
 
     public:
-        Bounce(const InputParser &p): in(p) { in.init(integrator, state, out); }
-        ~Bounce(){ delete integrator; }
+        Bounce(const InputParser &p): 
+            in(&p), 
+            integrator(in->get_integrator()),
+            state(in->get_state()),
+            out(in->get_outputparser())
+                {}
+        ~Bounce(){ delete in; delete integrator; delete state; delete out; }
         void calculate();
 
 };

@@ -7,9 +7,10 @@ int main(int ac, char* av[]) {
 
     InputParser p(ac, av);
 
-    Bounce mycalc(p);
-
-    mycalc.calculate();
+    if(! p.is_done() ){
+        Bounce mycalc(p);
+        mycalc.calculate();
+    }
 
     return 0;
 }

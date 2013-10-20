@@ -3,6 +3,7 @@
  */
 #include "xyz.hpp"
 #include "types.hpp"
+#include "constants.hpp"
 #include <fstream>
 #include <iostream>
 using namespace types;
@@ -15,35 +16,33 @@ void XyzFile::read(const string_t &fn){
     file.open(fname.c_str());
 
     if (file.is_open()) {
-        string_t line;
+        // Populate stringstream
         std::stringstream ss;
+        ss << file.rdbuf();
+        file.close();
 
         // Read number of atoms
-        std::getline(file, line);
-        ss << line;
         ss >> N;
 
-        // Discard comment line
-        std::getline(file, line);
-        ss << line;
-        ss >> comment;
+        // Reading the comment line is a bit problematic
+        // since stringstream skips whitespace
+        char c[256];
+        ss.getline(c,256); // should get the rest of the 1st line
+        ss.getline(c,256); // should get the 2nd line
+        comment = string_t(c);
 
         // Read atoms
-        real_t tmpx, tmpy, tmpz;
-        string_t tmpsymbol;
-
         x = VecVec3d(N, 0.0);
         symbols = vec_t< string_t >(N, "C");
         m = vec_t< real_t >(N, 1.0);
         for(size_t i=0; i<N; ++i){
 
-            if(!file.good()){
-                std::cout << "Error: Unexpected end of " << fname << "\n";
+            if(!ss.good()){
+                std::cout << "Error: Could not parse " << fname 
+                          << " at line "<< i+3 << "\n";
                 break;
             }
 
-            std::getline(file,line);
-            ss << line;
             ss >> symbols(i) >> x(i,0) >> x(i,1) >> x(i,2);
             // TODO: translate symbols into masses
 
@@ -52,16 +51,16 @@ void XyzFile::read(const string_t &fn){
 
 }
 
-string_t XyzFile::to_stringstream() const {
+string_t XyzFile::to_string() const {
     std::stringstream ss;
 
     ss << "   " << N << std::endl;
-    ss << comment;
+    ss << comment << std::endl;
 
     for(size_t i=0; i<N; ++i){
-        ss << symbols(i) 
-           << std::scientific << x(i,0)
-           << std::scientific << x(i,1)
+        ss << symbols(i) << " "
+           << std::scientific << x(i,0) << " "
+           << std::scientific << x(i,1) << " "
            << std::scientific << x(i,2)
            << std::endl;
     }
@@ -75,7 +74,7 @@ void XyzFile::write(const string_t &fn, std::ios_base::openmode m) {
     std::ofstream of;
     of.open(fname.c_str(), m);
 
-    of << to_stringstream();
+    of << to_string();
 
     of.close();
 

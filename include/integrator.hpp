@@ -24,9 +24,9 @@ class Integrator {
         Integrator(real_t dt, size_t nstep, integrator::type t) :
             dt(dt), nstep(nstep), step(0), type(t) {}
         virtual ~Integrator() =0;
-        virtual void dostep(State &s) =0;
+        virtual void do_step(State *s) =0;
         real_t t() { return step*dt; }
-        bool done() { return step <= nstep; }
+        bool is_done() { return step > nstep; }
         size_t get_step() const { return step; }; 
 };
 
@@ -35,7 +35,7 @@ class VelocityVerlet : public Integrator {
         VelocityVerlet(real_t dt, size_t nstep) : 
             Integrator(dt,nstep, integrator::VelocityVerlet) {}
         ~VelocityVerlet() {}
-        void dostep(State &s);
+        void do_step(State *s);
 };
 
 

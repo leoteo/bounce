@@ -9,7 +9,7 @@ using namespace types;
 
 class XyzFile {
     private:
-        string_t to_stringstream() const;
+        string_t to_string() const;
         string_t fname;
 
     public:

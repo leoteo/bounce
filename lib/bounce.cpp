@@ -14,10 +14,10 @@ void Bounce::calculate(){
     std::cout << "Starting calculation.\n";
     timer.print();
 
-    while( ! integrator->done() ){
-        integrator->dostep(state);
+    while( ! integrator->is_done() ){
+        integrator->do_step(state);
         
-        out.write(integrator, state);
+        out->write(integrator, state);
     }
 
 

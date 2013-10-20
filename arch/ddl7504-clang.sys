@@ -1,6 +1,7 @@
 CC = clang++
 LD = clang++
 
+# use e.g. make <target> debug=1
 ifdef debug
 CFLAGS = -O0 -g
 else
@@ -15,7 +16,7 @@ CFLAGS += -I/opt/local/include
 #
 ## boost
 LFLAGS += -L/opt/local/lib
-LFLAGS += -lboost_program_options-mt -lboost_regex-mt 
+LFLAGS += -lboost_program_options-mt
 #LFLAGS += -lboost_system-mt -lboost_filesystem-mt
 #
 #

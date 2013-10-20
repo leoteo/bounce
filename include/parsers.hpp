@@ -18,7 +18,7 @@ class OutputParser {
         size_t nwrite;
     public:
         OutputParser() {}
-        void write(const Integrator *i, const State &s);
+        void write(const Integrator *i, const State *s);
         OutputParser(size_t nwrite) : nwrite(nwrite) {}
 };
 
@@ -27,10 +27,15 @@ class InputParser {
         int ac;
         char** av;
         boost::program_options::variables_map vm;
+        bool done;
     public:
         InputParser() {}
         InputParser(int ac, char* av[]);
-        void init(Integrator *i, State &s, OutputParser &o);
+
+        Integrator *get_integrator() const;
+        State *get_state() const;
+        OutputParser *get_outputparser() const;
+        bool is_done() { return done; }
 };
 
 

@@ -20,7 +20,7 @@ INCDEP     = $(addprefix $(INCDIR)/, $(addsuffix .hpp, $(COMPONENTS)))
 LIBDEP     = $(addprefix $(LIBDIR)/, $(addsuffix .o, $(COMPONENTS)))
 #
 ###### Programs
-EXAMPLES         = ex01 test-multi test-vec test-argparse
+EXAMPLES         = ex01 test-multi test-vec test-argparse test-ss
 
 ##### Targets
 

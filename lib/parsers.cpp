@@ -9,6 +9,7 @@
 #include "xyz.hpp"
 #include "types.hpp"
 using namespace types;
+#include "constants.hpp"
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
@@ -23,19 +24,23 @@ InputParser::InputParser(int ac, char* av[]) : ac(ac), av(av){
     ("help,h", "produce help message")
     ("version,v", "print version information")
     ("input-file,i", po::value<string_t>(&input_file), "Input file specifying all or several of the following options")
-    ("dt",po::value< real_t >()->default_value(0.5), "Timestep for integration.")
-    ("t", po::value< real_t >()->default_value(100), "Total integration time.")
+    ("dt",po::value< real_t >()->default_value(0.5), "Timestep for integration [fs]")
+    ("t", po::value< real_t >()->default_value(100), "Total integration time [fs]")
     ("nwrite", po::value< size_t >()->default_value(100), "Write info each x steps.")
-    ("int", po::value< string_t >()->default_value("lj"), "Integrator. Can be 'vv' (Velocity Verlet).")
+    ("int", po::value< string_t >()->default_value("vv"), "Integrator. Can be 'vv' (Velocity Verlet).")
 //    ("fil_m", po::value<string_t>()->default_value("m"), "File with list of masses")
 //    ("fil_v", po::value<string_t>()->default_value("v"), "File with list of velocities")
 //    ("fil_x", po::value<string_t>()->default_value("x"), "File with list of positions")
-    ("fil_xyz", po::value<string_t>(), ".xyz file containing positions and atomic symbols")
+    ("fil_xyz", po::value<string_t>(), ".xyz file containing positions and atomic symbols. See http://openbabel.org/wiki/XYZ_%28format%29")
+    ("temp0",po::value< real_t >()->default_value(300), "Initial temperature [K]")
     // for simplicity, we allow just one kind of interaction for the moment
     ("f", po::value< string_t >()->default_value("lj"), "Interactions between particles. Can be 'lj' (Lennard-Jones) or 'g' (Gravity).")
-    ("lj_sigma",po::value< real_t >()->default_value(1.0), "Lennard-Jones sigma")
-    ("lj_epsilon",po::value< real_t >()->default_value(1.0), "Lennard-Jones epsilon")
-    ("lj_rcut",po::value< real_t >()->default_value(1.0), "Lennard-Jones cutoff radius")
+    ("lj_sigma",po::value< real_t >()->default_value(3.4), "Lennard-Jones sigma [Angstroms]")
+    ("lj_epsilon",po::value< real_t >()->default_value(0.997), "Lennard-Jones epsilon [kJ/mol]")
+    ("lj_rcut",po::value< real_t >()->default_value(8.5), "Lennard-Jones cutoff radius [Angstroms]")
+    ("cell_x",po::value< real_t >()->default_value(10.0), "Cell size along x [Angstroms]")
+    ("cell_y",po::value< real_t >()->default_value(10.0), "Cell size along y [Angstroms]")
+    ("cell_z",po::value< real_t >()->default_value(10.0), "Cell size along z [Angstroms]")
     ;
 
     // Register positional options
@@ -60,64 +65,86 @@ InputParser::InputParser(int ac, char* av[]) : ac(ac), av(av){
        ){
         std::cout << "Usage: bounce [options]\n";
         std::cout << desc << "\n";
+        done = true;
     } else if (vm.count("version")) {
         std::cout << "Oct 16th 2013\n";
-    } 
+        done = true;
+    } else {
+        done = false;
+    }
 
 }
 
-
-void InputParser::init(Integrator *i, State &s, OutputParser &o){
-
+Integrator *InputParser::get_integrator() const {
     // Setting up the integrator
     if(vm["int"].as< string_t >() == "vv"){
-        i = new VelocityVerlet(
+        return new VelocityVerlet(
                vm["dt"].as< real_t >(), 
                size_t(vm["t"].as< real_t >() / vm["dt"].as< real_t>())
             );
+    } else {
+        std::cout << "Error: invalid integrator "<< vm["int"].as< string_t >() 
+                  << ".\n";
+        return 0;
     }
+}
 
+State *InputParser::get_state() const {
     // Setting up the state
 
     vec_t< Force* > forces;
     if(vm["f"].as< string_t >() == "lj"){
         forces.push_back(
-          new LennardJones(
+            new LennardJones(
                 vm["lj_sigma"].as< real_t >(),
                 vm["lj_epsilon"].as< real_t >(),
                 vm["lj_rcut"].as< real_t >()
             )
         );
+    } else {
+        std::cout << "Error: invalid force "<< vm["f"].as< string_t >() 
+                  << ".\n";
+        return 0;
     }
+
+    // Setting up parameters of simulation cell
+    vec_t < real_t > cell;
+    cell.push_back(vm["cell_x"].as< real_t >());
+    cell.push_back(vm["cell_y"].as< real_t >());
+    cell.push_back(vm["cell_z"].as< real_t >());
 
     if( vm.count("fil_xyz") ){
         XyzFile xyz = XyzFile();
         xyz.read(vm["fil_xyz"].as< string_t >());
 
-        // TODO: add initial temperature and draw velocities from gaussian dist.
-        s = State(xyz.N, xyz.x, VecVec3d(xyz.N, 0.0), xyz.m, forces);
+        return new State(xyz.N, xyz.x, xyz.m, forces, 
+                         cell, vm["temp0"].as< real_t >());
     }
     else {
         // At the moment we don't support the fil_m fil_x fil_v
         std::cout << "Error: No initial positions provided.\n";
+        return 0;
     }
+}
 
+
+OutputParser *InputParser::get_outputparser() const {
     // Setting up the OutputParser
-    o = OutputParser( vm["nwrite"].as< size_t >() );
+    return new OutputParser( vm["nwrite"].as< size_t >() );
 
 }
 
-void OutputParser::write(const Integrator *i, const State &s){
+void OutputParser::write(const Integrator *i, const State *s){
     if (i->get_step() % nwrite == 0){
         std::stringstream ss;
         ss << "step = " << i->get_step() << ", "
-           << "eKin = " << s.eKin << ", "
-           << "ePot = " << s.ePot << ", "
-           << "eTot = " << s.eTot << "\n";
+           << "eKin = " << s->eKin << ", "
+           << "ePot = " << s->ePot << ", "
+           << "eTot = " << s->eTot << "\n";
 
-        std::cout << ss;
+        std::cout << ss.str();
 
-        XyzFile xyz(s.N, "", s.m, s.x);
-        xyz.append("POS.xyz");
+        XyzFile xyz(s->N, "", s->m, s->x);
+        xyz.append("traj.xyz");
     }
 }

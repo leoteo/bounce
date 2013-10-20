@@ -15,7 +15,7 @@ namespace force {
 
 class Force {
     public:
-        virtual void add(State &s) =0;
+        virtual void add(State *s) =0;
         virtual ~Force() =0;
 };
 
@@ -30,7 +30,7 @@ class LennardJones : public Force {
         LennardJones(real_t sigma, real_t epsilon, real_t rcut):
             sigma(sigma), epsilon(epsilon), rcut(rcut), type(force::LennardJones) {}
         ~LennardJones() {}
-        void add(State &s);
+        void add(State *s);
 };
 
 #endif
