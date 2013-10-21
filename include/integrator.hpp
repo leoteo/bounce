@@ -25,7 +25,7 @@ class Integrator {
             dt(dt), nstep(nstep), step(0), type(t) {}
         virtual ~Integrator() =0;
         virtual void do_step(State *s) =0;
-        real_t t() { return step*dt; }
+        real_t t() const { return step*dt; }
         bool is_done() { return step > nstep; }
         size_t get_step() const { return step; }; 
 };

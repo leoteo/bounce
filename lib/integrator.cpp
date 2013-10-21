@@ -16,7 +16,7 @@ void VelocityVerlet::do_step(State* s){
         /* 1/2 velocity step plus 1 position step */
         for(i=0; i < N; ++i){
             for(r=0; r < 3; ++r){
-                s->v(i,r) += 0.5 * dt / constants::mvsq * s->f(i,r) / s->m(i);
+                s->v(i,r) += 0.5 * dt  * s->f(i,r) / ( constants::mvsq * s->m(i));
                 s->x(i,r) += dt * s->v(i,r);
             }
         }
@@ -38,7 +38,6 @@ void VelocityVerlet::do_step(State* s){
              }
         }
 
-        s->eTot = s->eKin + s->ePot;
         s->temp = 2.0 * s->eKin/(3 * s->N - 3)/constants::kB;
 
         ++step;

@@ -138,9 +138,10 @@ void OutputParser::write(const Integrator *i, const State *s){
     if (i->get_step() % nwrite == 0){
         std::stringstream ss;
         ss << "step = " << i->get_step() << ", "
-           << "eKin = " << s->eKin << ", "
-           << "ePot = " << s->ePot << ", "
-           << "eTot = " << s->eTot << "\n";
+           << "t = " << i->t() << " fs, "
+           << "eKin = " << s->eKin << " kJ/mol, "
+           << "ePot = " << s->ePot << " kJ/mol, "
+           << "eTot = " << s->eTot() << " kJ/mol\n";
 
         std::cout << ss.str();
 

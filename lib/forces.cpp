@@ -19,6 +19,9 @@ void LennardJones::add(State *s){
         for(j=i+1; j < N; ++j) {
             r = s->dist(i,j);
             if (r < rcut){
+                if (r * 3 < sigma)
+                    std::cout << "Warning: atoms " << i+1 
+                              << " and " << j+1 << " too close.\n";
 
                 pow6 = pow(sigma/r, 6.0);
                 pow12 = pow(sigma/r, 12.0);
@@ -31,8 +34,8 @@ void LennardJones::add(State *s){
                      -12.0*pow12 +6.0*pow6
                     ) /r;
                 for(d=0; d<3; ++d){
-                    s->f(i,d) += (s->x(i,d)-s->x(j,d))/r * f;
-                    s->f(j,d) -= (s->x(i,d)-s->x(j,d))/r * f;
+                    s->f(i,d) += s->pbc(s->x(i,d) - s->x(j,d), d)/r * f;
+                    s->f(j,d) -= s->pbc(s->x(i,d) - s->x(j,d), d)/r * f;
                 }
             }
         }

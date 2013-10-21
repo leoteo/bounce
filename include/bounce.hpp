@@ -31,7 +31,10 @@ class Bounce {
             state(in->get_state()),
             out(in->get_outputparser())
                 {}
-        ~Bounce(){ delete in; delete integrator; delete state; delete out; }
+        ~Bounce(){ 
+            delete integrator; 
+            delete state; 
+            delete out; }
         void calculate();
 
 };

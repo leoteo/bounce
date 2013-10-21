@@ -17,7 +17,7 @@ namespace constants {
 
     const real_t kB = 0.0083144621;   /* Boltzmann constant [kJ/mol/K] */
 
-    const real_t mvsq = 1.000043E-4;   /* a.m.u.*(Angstrom/fs)**2 => kJ/mol */ 
+    const real_t mvsq = 1.000043E+4;   /* a.m.u.*(Angstrom/fs)**2 => kJ/mol */ 
 
 }
 

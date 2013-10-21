@@ -20,7 +20,6 @@ class State {
         real_t ePot;      /** Potential energy */
         real_t eKin;      /** Kinetic energy */
         real_t temp;      /** Temperature */
-        real_t eTot;      /** Total energy */
         size_t N;         /** Number of particles */
 
         vec_t< real_t > cell;  /** only rectangular cell supported */
@@ -33,7 +32,6 @@ class State {
             m(vec_t<real_t>(N, 1.0)),
             ePot(0.0),
             eKin(0.0),
-            eTot(0.0),
             N(N),
             cell(vec_t<real_t>(3,1.0)) 
                 {}
@@ -48,6 +46,8 @@ class State {
         inline real_t dist(size_t i, size_t j) const;
         inline real_t pbc(real_t d, size_t dim) const;
         inline void draw_v(real_t t0);
+
+        inline real_t eTot() const { return eKin + ePot; }
         
 };
 
@@ -62,7 +62,9 @@ inline real_t State::dist(size_t i, size_t j) const {
 }
 
 inline real_t State::pbc(real_t d, size_t dim) const {
-    return std::fmod(d, cell(dim)*0.5);
+    while( d >  0.5 * cell(dim)) d -= cell(dim);
+    while( d < -0.5 * cell(dim)) d += cell(dim);
+    return d;
 }
 
 #endif

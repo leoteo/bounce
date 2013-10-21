@@ -15,7 +15,6 @@ State::State(size_t N, VecVec3d x, vec_t<real_t> m, vec_t<Force*> forces,
     m(m),
     ePot(0.0),
     eKin(0.0),
-    eTot(0.0),
     N(N), 
     cell(cell) {
 
@@ -39,7 +38,7 @@ inline void State::draw_v(real_t t0) {
         tmp = sqrt(constants::kB * t0 / (m(i) * constants::mvsq));
         for(size_t r=0; r<3; ++r){
             v(i,r) = d.draw() * tmp;
-            
+            eKin += 0.5*m(i)*v(i,r)*v(i,r) * constants::mvsq;
         }
     }
 
