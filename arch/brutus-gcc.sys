@@ -1,0 +1,17 @@
+# module load gcc/4.4.6 boost/1.54.0 
+CC = g++
+LD = g++    
+
+# make <target> debug=1
+ifdef debug
+CFLAGS = -O0 -g
+else
+CFLAGS = -O2
+endif
+
+
+# boost
+CFLAGS += -I${BOOST_ROOT}/include
+LFLAGS += -L${BOOST_ROOT}/lib64
+LFLAGS += -lboost_program_options
+

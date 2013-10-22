@@ -9,6 +9,7 @@
 #include "types.hpp"
 using namespace types;
 #include "constants.hpp"
+#include <stdlib.h>
 
 /**
  * Use Box-Muller algorithm to generate a pair of

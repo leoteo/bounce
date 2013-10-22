@@ -1,5 +1,6 @@
 # Set up environment variables for proper architecture
-include arch/ddl7504-clang.sys
+#include arch/ddl7504-clang.sys
+include arch/brutus-gcc.sys
 
 ##### Flags
 INCDIR     = include
@@ -48,4 +49,4 @@ bounce: $(LIBDIR)/main.o $(LIBDEP)
 $(EXAMPLES): %: examples/%.o $(LIBDEP)
 	$(LD) -o bin/$@ $^ $(LFLAGS)
 #
-all: directories $(STMPROGS) $(UTILPROGS)
+all: directories bounce
