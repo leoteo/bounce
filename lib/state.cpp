@@ -6,16 +6,23 @@
 #include "constants.hpp"
 #include "random.hpp"
 
-State::State(size_t N, VecVec3d x, vec_t<real_t> m, vec_t<Force*> forces, 
-             vec_t<real_t> cell, real_t t0) :
+State::State(
+        size_t N, 
+        VecVec3d x, 
+        vec_t<real_t> m, 
+        vec_t<string_t> symbols,
+        vec_t<Force*> forces,
+        vec_t<real_t> cell, 
+        real_t t0) :
+    N(N), 
     x(x),
+    m(m),
+    symbols(symbols),
     v(VecVec3d(N,0.0)),
     f(VecVec3d(N, 0.0)),
     forces(forces),
-    m(m),
     ePot(0.0),
     eKin(0.0),
-    N(N), 
     cell(cell) {
 
     /* initialize forces */
@@ -33,13 +40,42 @@ State::State(size_t N, VecVec3d x, vec_t<real_t> m, vec_t<Force*> forces,
 inline void State::draw_v(real_t t0) {
     NormalDistribution d = NormalDistribution();
 
-    real_t tmp;
+    // Draw velocities from normal distribution of appropiate sigma
+    real_t scale;
     for(size_t i=0; i < N; ++i){
-        tmp = sqrt(constants::kB * t0 / (m(i) * constants::mvsq));
+        scale = sqrt(constants::kB * t0 / (m(i) * constants::mvsq));
         for(size_t r=0; r<3; ++r){
             v(i,r) = d.draw() * tmp;
             eKin += 0.5*m(i)*v(i,r)*v(i,r) * constants::mvsq;
         }
     }
 
+    // Impose initial temperature t0 exactly
+    real_t t = 2.0 * eKin / ((3.0 * N - 3.0) * constants::kB);
+    real_t r = sqrt(t0/t);
+
+    eKin *= r*r;
+    for(size_t i=0; i < N; ++i)
+        for(size_t r=0; r<3; ++r)
+            v(i,r) *= r;
+
 }
+
+VecVec3d State::pTot() const {
+    VecVec3d pTot = VecVec3d(1, 0.0);
+    for(size_t i=0; i < N; ++i){
+        for(size_t r=0; r<3; ++r){
+            pTot(0,r) += m(i) * v(i,r);
+        }
+    }
+    return pTot;
+}
+
+VecVec3d State::lTot() const {
+    VecVec3d lTot = VecVec3d(1,0.0);
+    for(size_t i=0; i < N; ++i){
+        lTot += m(i) * cross(x, i, v, i);
+    }
+    return lTot;
+}
+

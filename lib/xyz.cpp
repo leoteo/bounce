@@ -44,8 +44,7 @@ void XyzFile::read(const string_t &fn){
             }
 
             ss >> symbols(i) >> x(i,0) >> x(i,1) >> x(i,2);
-            // TODO: translate symbols into masses
-
+            m(i) = constants::get_mass(symbols(i));
         }
     }
 
@@ -88,8 +87,17 @@ void XyzFile::append(const string_t &fn) {
     write(fn, std::ofstream::app);
 }
 
-XyzFile::XyzFile(size_t N, const string_t& comment, const vec_t<real_t> &m,
-                const VecVec3d &x) :  N(N), comment(comment), m(m), x(x) {
+XyzFile::XyzFile(
+        size_t N, 
+        const string_t& comment, 
+        const vec_t<string_t> &symbols,
+        const VecVec3d &x) 
+    :  N(N), comment(comment), symbols(symbols), m(vec_t<real_t>(N)), x(x) {
     //TODO: translate masses to symbols
-    symbols = vec_t < string_t > (N, "C");
+    for(size_t i=0; i<N; ++i){
+        m(i) = constants::get_mass(symbols(i));
+    }
 }
+
+
+

@@ -17,11 +17,11 @@ class XyzFile {
         size_t N;                    /** number of atoms */
         string_t comment;            /** comment (2nd line) */
         vec_t< string_t > symbols;   /** atomic symbols */
-        vec_t< real_t > m;          /** TODO: atomic masses derived from symbols*/
+        vec_t< real_t > m;          /** atomic masses derived from symbols*/
         VecVec3d x;                 /** positions */
 
         XyzFile() {}
-        XyzFile(size_t N, const string_t& comment, const vec_t< real_t > &m, 
+        XyzFile(size_t N, const string_t& comment, const vec_t< string_t > &symbols, 
                 const VecVec3d &x);
         
         void read(const string_t &fn);

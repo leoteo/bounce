@@ -3,6 +3,7 @@
  */
 #include <string>
 #include <fstream>
+#include <iomanip>
 #include "parsers.hpp"
 #include "integrator.hpp"
 #include "state.hpp"
@@ -92,8 +93,23 @@ Integrator *InputParser::get_integrator() const {
 State *InputParser::get_state() const {
     // Setting up the state
 
+    // parameters of simulation cell
+    vec_t < real_t > cell;
+    cell.push_back(vm["cell_x"].as< real_t >());
+    cell.push_back(vm["cell_y"].as< real_t >());
+    cell.push_back(vm["cell_z"].as< real_t >());
+
+    // Forces
     vec_t< Force* > forces;
     if(vm["f"].as< string_t >() == "lj"){
+
+        // Check that cell is large enough
+        real_t rcut = vm["lj_rcut"].as< real_t >();
+        for(size_t i=0; i<3; ++i){
+            if(cell(i) < 2*rcut)
+                std::cout << "Warning: Cell dimension "<< i+1 << " < 2*rcut in violation of the minimum image convention.\n";
+        }
+
         forces.push_back(
             new LennardJones(
                 vm["lj_sigma"].as< real_t >(),
@@ -107,17 +123,12 @@ State *InputParser::get_state() const {
         return 0;
     }
 
-    // Setting up parameters of simulation cell
-    vec_t < real_t > cell;
-    cell.push_back(vm["cell_x"].as< real_t >());
-    cell.push_back(vm["cell_y"].as< real_t >());
-    cell.push_back(vm["cell_z"].as< real_t >());
 
     if( vm.count("fil_xyz") ){
         XyzFile xyz = XyzFile();
         xyz.read(vm["fil_xyz"].as< string_t >());
 
-        return new State(xyz.N, xyz.x, xyz.m, forces, 
+        return new State(xyz.N, xyz.x, xyz.m, xyz.symbols, forces, 
                          cell, vm["temp0"].as< real_t >());
     }
     else {
@@ -137,15 +148,20 @@ OutputParser *InputParser::get_outputparser() const {
 void OutputParser::write(const Integrator *i, const State *s){
     if (i->get_step() % nwrite == 0){
         std::stringstream ss;
+        //ss.setf( std::ios_base::fixed, std::ios_base::floatfield );
         ss << "step = " << i->get_step() << ", "
            << "t = " << i->t() << " fs, "
-           << "eKin = " << s->eKin << " kJ/mol, "
+            << std::fixed << std::setprecision(6)
+           << "eKin = "  << s->eKin << " kJ/mol, "
            << "ePot = " << s->ePot << " kJ/mol, "
-           << "eTot = " << s->eTot() << " kJ/mol\n";
+           << "eTot = " << s->eTot() << " kJ/mol, "
+            << std::scientific << std::setprecision(8)
+           << "|pTot| = "  << abs(s->pTot()) << " u A/fs, "
+           << "|lTot| = " << abs(s->lTot()) << " u A/fs\n";
 
         std::cout << ss.str();
 
-        XyzFile xyz(s->N, "", s->m, s->x);
+        XyzFile xyz(s->N, "", s->symbols, s->x);
         xyz.append("traj.xyz");
     }
 }

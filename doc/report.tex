@@ -1,6 +1,8 @@
 \documentclass{scrartcl}
 \usepackage{leopackages}
 \usepackage{leoshortcuts}
+\usepackage{enumerate}
+\usepackage{hyperref}
 
 \newcommand*{\sectionpostamble}{}
 \newcommand*{\teacher}[1]{%
@@ -24,20 +26,125 @@
 
 \maketitle
 \tableofcontents
+\clearpage
 
-\section{General considerations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Questions}
+
+\subsection{A-Priori Performance Analysis}
+\label{sec:pa}
+
+\begin{enumerate}[a)]
+    \item Pseudocode of the N-body solver
+\begin{verbatim}
+initialize positions x, velocities v and masses m
+initialize accelerations a
+for step = 1 to number of steps
+  for i = 1 to number of particles
+      v(i) = K2(0.5 * dt, v(i), x)
+      x(i) = K1(dt, x(i), v(i))
+  update accelerations a
+  for i = 1 to number of particles
+      v(i) = K2(0.5 * dt / m(i), v(i), x)
+\end{verbatim}
+
+    \item TCM values for K1 and K2
+
+        \begin{tabular}[h]{c|ccc}
+            Kernel & T (r,w) & C & M \\\hline
+            K1 & 2n+1,n & 2n & 2n+1 \\
+            K2 & 2n+1,n & 2n & 2n+1 \\
+            $a_i(\bs{x})$ & n,1 & $n^2$ & n
+        \end{tabular}
+
+        T,C and M for $a_i(\bs{x})$ obviously depend on the details of the
+        implementation. 
+        I therefore give only the highest order in $n$, neglecting prefactors.
+\end{enumerate}
+
+\subsection{N-Body Problem on CPU}
+
+The algorithm outlined in section \ref{sec:pa} 
+performs molecular dynamics simulations at constant
+number of particles, volume, total energy and total linear momentum.
+i.e. in the NVE$\bs{P}$ ensemble.
+
+But while 
+$\bs{P} = \left(\sum_i m_i\right) \dot{\bs{R}}$,
+where $i$ runs over the particles in the unit cell,
+is a constant of motion,
+the center of mass 
+$\bs{R} = \left(\sum_i m_i \bs{x}_i\right) / \sum_i m_i$ 
+itself generally is 
+\emph{not}. The trivial exception being, of course, when 
+$\bs{P}=\vec{0}$ is explicitly enforced%
+\footnote{One might argue that the center of mass is conserved under 
+    periodic boundary conditions, but in this case the concept of a 
+    'center of mass' is anyhow ill-defined.}.
+
+Furthermore, the total angular momentum
+$\bs{L} = \sum_i \bs{x} \times m_i\bs{v}_i$
+is \emph{not} conserved in MD simulations of interacting
+particles under periodic boundary conditions. 
+The mathematical reason is that rectilinear periodic boundary conditions
+break rotational symmetry%
+\footnote{Rotating the initial positions and velocities inside 
+    a fixed unit cell will \emph{not} result in a simple
+    rotation of the trajectory, but in a \emph{completely different}
+    trajectory.}.
+More intuitively speaking, hm..
+
+
+\begin{enumerate}[a)]
+    \item Instead of initializing the velocities according to some (random?) 
+        target value for the total energy,
+        I chose to initialize the velocities according to a target temperature
+        $T_0$.
+
+    Figure \ref{fig:cons} reports the constants of motion as a function 
+    of simulation time. While some fluctuations of the order of
+    0.1\% are visible in the total energy, the total linear momentum is
+    conserved almost to floating point precision.
+    This is because, irrespective of the quality of the integration,
+    Newton's third law is respected within floating point precision.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/energies}
+    \includegraphics[width=0.46\textwidth]{images/etot}
+    \includegraphics[width=0.46\textwidth]{images/ptot}
+    \caption{Conserved quantities as a function of time.
+             The simulation contains 125 argon atoms and is performed
+             with a time step of 2fs.}
+    \label{fig:cons}
+\end{figure}
+
+\item Figure \ref{fig:scal} illustrates the scaling behavior of the unoptimized
+    code. As expected, the execution time is fitted well by a 2nd order 
+    polynomial; the $N^2$ term of course dominating for large $N$.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/scaling}
+    \caption{Scaling of execution time versus problem size. 
+             The calculations were performed on a single core of a Intel Core i7 
+    processor with a clock frequency of 2.3 GHz.}
+    \label{fig:scal}
+\end{figure}
+
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Main structure of code \& details}
 
 The two main tasks of an N-body solver are
 \begin{enumerate}
     \item to calculate the forces for a given point in phase space and 
-    \item to update the phase space coordinates using the forces as well as
-        the kinetic energy.
+    \item to update the phase space coordinates using these forces.
 \end{enumerate}
 
 Since our solver should be able to treat different kinds of interactions,
-the forces will be modularized in two levels of abstraction: 
-First the kind of potential (two, three, \ldots N-body) and then the
-actual form of the potential.
+the forces will be modularized. \verb|LennardJones| is a class derived
+from a more general \verb|Force|  class.
 
 Furthermore, we will need to compile the code on CPU and GPU architectures. 
 We will use preprocessor instructions to swtich between the different
@@ -78,7 +185,7 @@ This still leaves the question of which containers to use.
 \subsection{Appropriate containers}
 
 When storing vectors and matrices, the tradeoff is between safety and
-flexibility. And there are lots of options at hand:
+flexibility.
 
 \begin{enumerate}
     \item \emph{The 'boxed' C++ way:} Using the safe and fast containers
@@ -133,7 +240,7 @@ An minimalistic set of input parameters is listed in Table \ref{tab:input}.
 
 \begin{table}
     \centering
-\begin{tabular}[h!]{cc}
+\begin{tabular}[h!]{ll}
     Symbol & Description \\\hline
     dt & time step \\
     t & total time \\
@@ -152,6 +259,19 @@ An minimalistic set of input parameters is listed in Table \ref{tab:input}.
 We will therefore discard the provided \verb|ArgumentParser.h| and move
 to the much more powerful \verb|boost::program_options|.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Source code}
 
+Since the source code is spread over quite a few files,
+I am not including it in the pdf file.
+The source code is publicly available on
+\url{https://github.com/leoteo/bounce}.
+
+In order to clone the repository using the \href{http://git-scm.com}{Git} 
+revision control system, do
+
+\begin{verbatim}
+git clone http://github.com/leoteo/bounce.git
+\end{verbatim}
 
 \end{document}

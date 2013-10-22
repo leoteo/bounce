@@ -24,11 +24,14 @@ class LennardJones : public Force {
         real_t sigma;
         real_t epsilon;
         real_t rcut;
+        real_t ecut;       /** Energy at r=rcut */
         force::type type;
 
     public:
         LennardJones(real_t sigma, real_t epsilon, real_t rcut):
-            sigma(sigma), epsilon(epsilon), rcut(rcut), type(force::LennardJones) {}
+            sigma(sigma), epsilon(epsilon), rcut(rcut), type(force::LennardJones) 
+          { ecut = 4.0*epsilon*(pow(sigma/rcut, 12.0)-pow(sigma/rcut, 6.0)); }
+
         ~LennardJones() {}
         void add(State *s);
 };

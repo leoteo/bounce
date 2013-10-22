@@ -56,9 +56,11 @@ class VecVec3d {
         const real_t&  operator() (size_t n, size_t r) const {return v(n*3 + r);}
               real_t&  operator() (size_t n, size_t r)       {return v(n*3 + r);}
         inline VecVec3d& operator*= (real_t r);
+        inline VecVec3d& operator+= (const VecVec3d& w);
         void zero() { size_t s = v.size(); for(size_t i=0; i < s; ++i) v(i) = 0.0; }      
         size_t size() const {return v.size();}
         inline void print() const;
+        inline real_t abs() const;
 };
 
 
@@ -73,9 +75,48 @@ inline void VecVec3d::print() const {
 }
 
 inline VecVec3d& VecVec3d::operator*= (real_t r) {
-            size_t s = v.size(); 
-            for(size_t i=0; i < s; ++i) v(i)*= r; 
-            return *this; 
+    size_t s = v.size(); 
+    for(size_t i=0; i < s; ++i) v(i)*= r; 
+    return *this; 
+}
+
+inline VecVec3d& VecVec3d::operator+= (const VecVec3d& w) {
+    size_t sv = this->size(), sw = w.size();
+    if(sv == sw) {
+        for(size_t i=0; i<sv; ++i)
+            v(i) += w.v(i);
+    }
+    else {
+        std::cout << "Error: Trying to add VecVec3d objects of different length\n";
+    }
+
+    return *this;
+}
+
+
+inline VecVec3d cross(const VecVec3d& v, size_t i, 
+                      const VecVec3d& w, size_t j) {
+    VecVec3d u = VecVec3d(1,0.0);
+    u(0,0) = v(i,1) * w(j,2) - v(i,2) * w(j,1);
+    u(0,1) = v(i,2) * w(j,0) - v(i,0) * w(j,2);
+    u(0,2) = v(i,0) * w(j,1) - v(i,1) * w(j,0);
+    return u;
+}
+
+inline VecVec3d  operator*(real_t a, const VecVec3d &v) {
+    VecVec3d w = v;
+    return w *= a;
+}
+
+inline real_t VecVec3d::abs() const {
+    size_t s = v.size();
+    real_t sum = 0;
+    for(size_t i=0; i<s; ++i) sum += v(i) * v(i);
+    return sqrt(sum);
+}
+
+inline real_t abs(const VecVec3d &v){
+    return v.abs();
 }
 
 typedef std::list<size_t> list_t;

@@ -10,34 +10,37 @@ using namespace types;
 
 class State {
     public:
+        size_t N;         /** Number of particles */
         VecVec3d x;
         VecVec3d v;
         VecVec3d f;
 
         vec_t<Force*> forces;
-        vec_t<real_t> m;  /** Masses of particles */
+        vec_t<real_t> m;              /** Masses of particles */
+        vec_t< string_t > symbols;    /** Symbols for particles */
 
         real_t ePot;      /** Potential energy */
         real_t eKin;      /** Kinetic energy */
         real_t temp;      /** Temperature */
-        size_t N;         /** Number of particles */
 
         vec_t< real_t > cell;  /** only rectangular cell supported */
 
         State() {}
         State(size_t N) : 
+            N(N),
             x(VecVec3d(N)),
             v(VecVec3d(N)),
             f(VecVec3d(N)),
             m(vec_t<real_t>(N, 1.0)),
             ePot(0.0),
             eKin(0.0),
-            N(N),
+            temp(0.0),
             cell(vec_t<real_t>(3,1.0)) 
                 {}
         State(size_t N,                /** to be used from xyz file */
               VecVec3d x, 
               vec_t<real_t> m, 
+              vec_t<string_t> symbols,
               vec_t<Force*> forces, 
               vec_t<real_t> cell,
               real_t t0); 
@@ -48,6 +51,8 @@ class State {
         inline void draw_v(real_t t0);
 
         inline real_t eTot() const { return eKin + ePot; }
+        VecVec3d pTot() const;
+        VecVec3d lTot() const;
         
 };
 

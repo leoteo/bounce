@@ -19,6 +19,9 @@ namespace constants {
 
     const real_t mvsq = 1.000043E+4;   /* a.m.u.*(Angstrom/fs)**2 => kJ/mol */ 
 
+    /** Convert atomic symbol to mass in Daltons (u) */
+    real_t get_mass(const string_t &symbol);
+
 }
 
 #endif

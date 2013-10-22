@@ -1,14 +1,14 @@
-dt=0.5
-t=100 
-nwrite=5
-fil_xyz = ar.xyz
+dt=2.0
+t=1000 
+nwrite=5 
+fil_xyz = myar.xyz
 
 temp0=300
 f=lj
 lj_sigma=3.4
 lj_epsilon=0.997
-lj_rcut=8.5
+lj_rcut=6.5
 
-cell_x=15 
-cell_y=15
-cell_z=15
+cell_x=25 
+cell_y=25
+cell_z=25

@@ -12,7 +12,7 @@ CFLAGS  += -I ./$(INCDIR)
 
 ###### Dependencies
 UTILS       = ArgumentParser Timer
-LIB         = bounce forces integrator parsers state 
+LIB         = bounce forces integrator parsers state constants
 LIB        += xyz
 #
 COMPONENTS = $(UTILS) $(LIB)

@@ -27,12 +27,10 @@ void LennardJones::add(State *s){
                 pow12 = pow(sigma/r, 12.0);
 
                 // Update potential energy
-                s->ePot += 4.0*epsilon*(pow12 - pow6);
+                s->ePot += 4.0*epsilon*(pow12 - pow6) - ecut;
 
                 // Update forces
-                f = -4.0*epsilon*(
-                     -12.0*pow12 +6.0*pow6
-                    ) /r;
+                f = -4.0*epsilon*(-12.0*pow12 +6.0*pow6 ) /r;
                 for(d=0; d<3; ++d){
                     s->f(i,d) += s->pbc(s->x(i,d) - s->x(j,d), d)/r * f;
                     s->f(j,d) -= s->pbc(s->x(i,d) - s->x(j,d), d)/r * f;
