@@ -26,7 +26,7 @@ cell_z={DIM}
 """ . format(DIM=d)
 
 
-for d in [4,6,8,9]:
+for d in [4,6,8,9,10,11,12,13]:
 
     nat=d**3
     dirname="N" + str(nat)

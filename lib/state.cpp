@@ -41,23 +41,23 @@ inline void State::draw_v(real_t t0) {
     NormalDistribution d = NormalDistribution();
 
     // Draw velocities from normal distribution of appropiate sigma
-    real_t scale;
+    real_t scalef;
     for(size_t i=0; i < N; ++i){
-        scale = sqrt(constants::kB * t0 / (m(i) * constants::mvsq));
+        scalef = sqrt(constants::kB * t0 / (m(i) * constants::mvsq));
         for(size_t r=0; r<3; ++r){
-            v(i,r) = d.draw() * tmp;
+            v(i,r) = d.draw() * scalef;
             eKin += 0.5*m(i)*v(i,r)*v(i,r) * constants::mvsq;
         }
     }
 
     // Impose initial temperature t0 exactly
     real_t t = 2.0 * eKin / ((3.0 * N - 3.0) * constants::kB);
-    real_t r = sqrt(t0/t);
+    scalef = sqrt(t0/t);
 
-    eKin *= r*r;
+    eKin *= scalef*scalef;
     for(size_t i=0; i < N; ++i)
         for(size_t r=0; r<3; ++r)
-            v(i,r) *= r;
+            v(i,r) *= scalef;
 
 }
 

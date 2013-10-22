@@ -118,15 +118,19 @@ More intuitively speaking, hm..
     \label{fig:cons}
 \end{figure}
 
-\item Figure \ref{fig:scal} illustrates the scaling behavior of the unoptimized
-    code. As expected, the execution time is fitted well by a 2nd order 
+\item Figure \ref{fig:scal} illustrates the scaling behavior of the CPU code,
+    once compiled without optimization and once with optimization enabled.
+    While optimization clearly speeds up the code drastically,
+    the execution time of both versions is fitted well by a 2nd order 
     polynomial; the $N^2$ term of course dominating for large $N$.
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.75\textwidth]{images/scaling}
-    \caption{Scaling of execution time versus problem size. 
+    \includegraphics[width=0.80\textwidth]{images/scaling}
+    \caption{Scaling of execution time versus problem size for a simulation
+             time of 1ps (500 steps). 
              The calculations were performed on a single core of a Intel Core i7 
-    processor with a clock frequency of 2.3 GHz.}
+             processor with a clock frequency of 2.3 GHz and compiled with clang++.}
     \label{fig:scal}
 \end{figure}
 
