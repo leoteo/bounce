@@ -4,8 +4,12 @@
 
 #include "integrator.hpp"
 #include "types.hpp"
-#include "constants.hpp"
 using namespace types;
+#include "constants.hpp"
+
+#ifdef TIME
+#include "time.hpp"
+#endif
 
 Integrator::~Integrator() {}
 
@@ -20,6 +24,10 @@ void VelocityVerlet::do_step(State* s){
                 s->x(i,r) += dt * s->v(i,r);
             }
         }
+#ifdef TIME
+        Timer tforce;
+        tforce.start();
+#endif
 
         /* compute forces */
         s->f.zero();
@@ -28,6 +36,9 @@ void VelocityVerlet::do_step(State* s){
         for(i=0; i < nf; ++i){
               s->forces(i)->add(s);
           }
+#ifdef TIME
+        std::cout << "Forces: " << tforce.read() << "s\n";
+#endif 
 
         /* 1/2 velocity step */
         s->eKin = 0.0;

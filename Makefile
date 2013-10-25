@@ -1,6 +1,6 @@
 # Set up environment variables for proper architecture
-#include arch/ddl7504-clang.sys
-include arch/brutus-gcc.sys
+include arch/ddl7504-clang.sys
+#include arch/brutus-gcc.sys
 
 ##### Flags
 INCDIR     = include
@@ -9,6 +9,9 @@ LIBDIR     = lib
 vpath % $(INCDIR)
 
 CFLAGS  += -I ./$(INCDIR)
+ifdef TIME
+CFLAGS  += -DTIME
+endif
 #LFLAGS += -L ./lib  # No archives here
 
 ###### Dependencies

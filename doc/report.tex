@@ -118,6 +118,12 @@ More intuitively speaking, hm..
     \label{fig:cons}
 \end{figure}
 
+    For a problem size of $N=1000$, one integration step takes
+    on average 6.86ms (see also Figure \ref{fig:scal}).
+    At this problem size, the calculaltion of the forces already 
+    dominates strongly, making up 99.5\% of the integration time.
+    Obviously, Kernel 2 is the one that ought to be parallelized.
+
 \item Figure \ref{fig:scal} illustrates the scaling behavior of the CPU code,
     once compiled without optimization and once with optimization enabled.
     While optimization clearly speeds up the code drastically,
@@ -244,17 +250,21 @@ An minimalistic set of input parameters is listed in Table \ref{tab:input}.
 
 \begin{table}
     \centering
-\begin{tabular}[h!]{ll}
+\begin{tabular}[h!]{l|l}
     Symbol & Description \\\hline
     dt & time step \\
     t & total time \\
+    nwrite & write info each x steps\\
+    int & type of integrator\\
+    fil\_xyz & .xyz file containing positions and atomic symbols\\
+    temp0 & initial temperature\\ 
     f & the type of interaction\\
     lj\_sigma & Lennard-Jones $\sigma$ \\
     lj\_epsilon & Lennard-Jones $\varepsilon$\\
     lj\_rcut & Lennard-Jones cutoff radius\\
-    fil\_m & file with masses \\
-    fil\_x & file with initial positions\\
-    fil\_v & file with initial velocities
+    cell\_x & cell size along x\\
+    cell\_y & cell size along y\\
+    cell\_z & cell size along z
 \end{tabular}
     \caption{Input parameters for a calculation.}
     \label{tab:input}
@@ -275,7 +285,7 @@ In order to clone the repository using the \href{http://git-scm.com}{Git}
 revision control system, do
 
 \begin{verbatim}
-git clone http://github.com/leoteo/bounce.git
+git clone https://github.com/leoteo/bounce.git
 \end{verbatim}
 
 \end{document}

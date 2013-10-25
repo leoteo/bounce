@@ -1,8 +1,8 @@
 CC = clang++
 LD = clang++
 
-# use e.g. make <target> debug=1
-ifdef debug
+# use e.g. make <target> DEBUG=1
+ifdef DEBUG
 CFLAGS = -O0 -g
 else
 CFLAGS = -O2
