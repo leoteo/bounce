@@ -1,5 +1,7 @@
 CC = clang++
 LD = clang++
+#CC = clang++-mp-3.3
+#LD = clang++-mp-3.3
 
 # use e.g. make <target> DEBUG=1
 ifdef DEBUG

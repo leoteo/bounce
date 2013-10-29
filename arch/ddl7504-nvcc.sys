@@ -1,0 +1,18 @@
+CC = nvcc
+LD = nvcc
+
+CFLAGS =  -ccbin=clang++ -arch=compute_30
+LFLAGS =  -ccbin=clang++ -arch=compute_30
+
+# use e.g. make <target> DEBUG=1
+ifdef DEBUG
+CFLAGS += -O0 -g
+else
+CFLAGS += -O2
+endif
+
+## boost
+CFLAGS += -I/opt/local/include
+LFLAGS += -L/opt/local/lib
+LFLAGS += -lboost_program_options-mt
+
