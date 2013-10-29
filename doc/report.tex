@@ -329,20 +329,22 @@ but allows to copy the data behind these pointers to the GPU as needed.
 
 Unfortunately, CUDA has no built-in mechanism for performing a 'deep copy'
 between host and device.
-One can accomplish \href{http://stackoverflow.com/questions/15431365/cudamemcpy-segmentation-fault/15435592#15435592}{deep copies manually},
-but in this case one has to copy pointers and the data behind them
-on a member-by-member basis.
-This takes away much of the benefit from an object-oriented
-design at the first place, 
-results in a lot of ugly code and generally seems to be discouraged.
+One can
+\href{http://stackoverflow.com/questions/15431365/cudamemcpy-segmentation-fault/15435592#15435592}{accomplish deep copies manually},
+and I have spent a lot of time on the \verb|gpu-cpp| branch, 
+writing 'device wrapper classes' for the classes instantiated on the host.
+It certainly is possible, but moving to storing pointers in the host classes
+makes them more complicated and even without any CUDA code
+I already seem to be loosing 20\% of speed.
 
-So, sadly, I don't see any alternative here to ugly code.
+So, in the end I got fed up with trying to make it look like CUDA understood C++
+and decided to expose its full uglyness. 
+
+\emph{Note:} 
 Calculating the Lennard-Jones forces is not a mere 'transformation' of
-the position vector, so \verb|thrust| doesn't here and we have to 
-write the kernel ourselves.
+the position vector, so we need to write the kernel ourselves
+and \verb|thrust| doesn't help here.
 
-The only thing we can do is to make copying vectors from/to device
-a bit easier, by providing member functions that do this.
 
 \subsection{GPU - avoiding race conditions}
 
