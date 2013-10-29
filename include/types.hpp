@@ -48,8 +48,11 @@ class vec_t {
         inline vec_t<T> & operator=(vec_t<T> w);
         ~vec_t() { delete v_; }
 
-        const T&   operator() (size_t i) const {return v_->at(i);}
-             T&   operator() (size_t i)       {return v_->at(i);}
+        // at(i) is about 2x slower than [i]
+        //const T&   operator() (size_t i) const {return v_->at(i);}
+        //     T&   operator() (size_t i)       {return v_->at(i);}
+        const T&   operator() (size_t i) const {return (*v_)[i];}
+             T&   operator() (size_t i)       {return (*v_)[i];}
         size_t size() const {return v_->size();}
         void push_back(const T& val) {return v_->push_back(val);}
         void copy(vec_t<T> *vec) { v_ = vec->v_; }
