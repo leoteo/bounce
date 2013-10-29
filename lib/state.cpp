@@ -8,19 +8,19 @@
 
 State::State(
         size_t N, 
-        VecVec3d x, 
-        vec_t<real_t> m, 
-        vec_t<string_t> symbols,
+        const VecVec3d &x, 
+        const vec_t<real_t> &m, 
+        const vec_t<string_t> &symbols,
         vec_t<Force*> forces,
         vec_t<real_t> cell, 
         real_t t0) :
     N(N), 
-    x(x),
-    m(m),
-    symbols(symbols),
-    v(VecVec3d(N,0.0)),
-    f(VecVec3d(N, 0.0)),
-    forces(forces),
+    x_(new VecVec3d( x )),
+    v_(new VecVec3d(N,0.0)),
+    f_(new VecVec3d(N, 0.0)),
+    m_(new vec_t<real_t>( m )),
+    symbols_(new vec_t<string_t>( symbols )),
+    forces(forces), // TODO: properly copy forces
     ePot(0.0),
     eKin(0.0),
     cell(cell) {
@@ -34,6 +34,49 @@ State::State(
     /* initialize velocities */
     draw_v(t0);
 
+}
+
+//Following the rule of three...
+State::State(const State &s) : 
+    N(s.N),
+    x_(new VecVec3d(*(s.x_)) ),
+    v_(new VecVec3d(*(s.v_)) ),
+    f_(new VecVec3d(*(s.f_)) ),
+    m_(new vec_t<real_t>(*(s.m_)) ),
+    symbols_(new vec_t<string_t>(*(s.symbols_))),
+    ePot(s.ePot),
+    eKin(s.eKin),
+    temp(s.temp),
+    cell(s.cell)    {
+    // Note: overloading operator() means we cannot use initialization syntax!
+    forces = s.forces;  //TODO: properly copy forces
+}
+
+void State::swap(State &s){
+    std::swap(N, s.N);
+    std::swap(x_, s.x_);
+    std::swap(v_, s.v_);
+    std::swap(f_, s.f_);
+    std::swap(forces, s.forces);
+    std::swap(m_, s.m_);
+    std::swap(symbols_, s.symbols_);
+    std::swap(ePot, s.ePot);
+    std::swap(eKin, s.eKin);
+    std::swap(temp, s.temp);
+    std::swap(cell, s.cell);
+}
+    
+State & State::operator=(State s) {
+    swap(s);
+    return *this;
+}
+
+State::~State(){
+    delete x_;
+    delete v_;
+    delete m_;
+    delete symbols_;
+    for(size_t i; i<forces.size(); ++i) delete forces(i);
 }
 
 
@@ -74,7 +117,7 @@ VecVec3d State::pTot() const {
 VecVec3d State::lTot() const {
     VecVec3d lTot = VecVec3d(1,0.0);
     for(size_t i=0; i < N; ++i){
-        lTot += m(i) * cross(x, i, v, i);
+        lTot += m(i) * cross(*x_, i, *v_, i);
     }
     return lTot;
 }

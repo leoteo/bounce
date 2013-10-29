@@ -30,7 +30,7 @@ void VelocityVerlet::do_step(State* s){
 #endif
 
         /* compute forces */
-        s->f.zero();
+        s->f().zero();
         s->ePot = 0.0;
         size_t nf = s->forces.size();
         for(i=0; i < nf; ++i){

@@ -125,10 +125,10 @@ State *InputParser::get_state() const {
 
 
     if( vm.count("fil_xyz") ){
-        XyzFile xyz = XyzFile();
-        xyz.read(vm["fil_xyz"].as< string_t >());
+        XyzFile *xyz = new XyzFile();
+        xyz->read(vm["fil_xyz"].as< string_t >());
 
-        return new State(xyz.N, xyz.x, xyz.m, xyz.symbols, forces, 
+        return new State(xyz->N, &(xyz->x), &(xyz->m), &(xyz->symbols), forces, 
                          cell, vm["temp0"].as< real_t >());
     }
     else {
@@ -161,7 +161,7 @@ void OutputParser::write(const Integrator *i, const State *s){
 
         std::cout << ss.str();
 
-        XyzFile xyz(s->N, "", s->symbols, s->x);
+        XyzFile xyz(s->N, "", s->symbols(), s->x());
         xyz.append("traj.xyz");
     }
 }

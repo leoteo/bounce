@@ -1,5 +1,7 @@
 # Set up environment variables for proper architecture
+#include arch/ddl7504-gcc.sys
 include arch/ddl7504-clang.sys
+#include arch/ddl7504-nvcc.sys
 #include arch/brutus-gcc.sys
 
 ##### Flags
@@ -24,7 +26,10 @@ INCDEP     = $(addprefix $(INCDIR)/, $(addsuffix .hpp, $(COMPONENTS)))
 LIBDEP     = $(addprefix $(LIBDIR)/, $(addsuffix .o, $(COMPONENTS)))
 #
 ###### Programs
-EXAMPLES         = ex01 test-multi test-vec test-argparse test-ss
+EXAMPLES   = ex01 test-multi test-vec  
+
+TESTS      = rule-of-three argparse stringstream vecp
+TESTS     += cuda-deepcopy cuda-d_vec_t cuda-d_VecVec3d
 
 ##### Targets
 
@@ -45,11 +50,15 @@ $(LIBDIR)/%.o:: $(LIBDIR)/%.cpp $(INCDIR)/%.hpp
 # General programs might depend on headers of the library
 %.o:: %.cpp $(INCDEP)
 	$(CC) -c $< -o $@ $(CFLAGS)
+%.o:: %.cu $(INCDEP)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 bounce: $(LIBDIR)/main.o $(LIBDEP)
 	$(LD) -o bin/bounce $^ $(LFLAGS)
 
 $(EXAMPLES): %: examples/%.o $(LIBDEP)
+	$(LD) -o bin/$@ $^ $(LFLAGS)
+$(TESTS): %: tests/%.o 
 	$(LD) -o bin/$@ $^ $(LFLAGS)
 #
 all: directories bounce

@@ -2,7 +2,7 @@
 \usepackage{leopackages}
 \usepackage{leoshortcuts}
 \usepackage{enumerate}
-\usepackage{hyperref}
+\usepackage[colorlinks=true]{hyperref}
 
 \newcommand*{\sectionpostamble}{}
 \newcommand*{\teacher}[1]{%
@@ -122,7 +122,8 @@ More intuitively speaking, hm..
     on average 6.86ms (see also Figure \ref{fig:scal}).
     At this problem size, the calculaltion of the forces already 
     dominates strongly, making up 99.5\% of the integration time.
-    Obviously, Kernel 2 is the one that ought to be parallelized.
+    Obviously, Kernel 2 is the one that ought to be parallelized,
+    with a possible speedup of up to 200x for $N=1000$.
 
 \item Figure \ref{fig:scal} illustrates the scaling behavior of the CPU code,
     once compiled without optimization and once with optimization enabled.
@@ -141,6 +142,10 @@ More intuitively speaking, hm..
 \end{figure}
 
 \end{enumerate}
+
+\subsection{N-Body Problem on GPU}
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,6 +279,108 @@ We will therefore discard the provided \verb|ArgumentParser.h| and move
 to the much more powerful \verb|boost::program_options|.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{GPU - parallelization strategy}
+
+In order to parallelize a single Lennard-Jones force update,
+we need to
+
+\begin{itemize}
+    \item copy the positions from host to device,
+    \item run the Lennard-Jones kernel on device, calculating the forces and
+    \item copy forces back from device to host.
+\end{itemize}
+
+I.e. this requires transfer of O(N) data between CPU and GPU at every step.
+The first question is therefore: Does this make sense or 
+do we have to parallelize
+the position \& velocity update as well and copy back to the host
+only when required for a readout?
+
+Assuming a data transfer rate of 9.6 GB/s and an array size of
+24 KB for the positions of 1000 particles in double precision,
+we arrive at 2.5$\mu$s transfer time, 
+i.e. significantly smaller than the 40$\mu$s
+for the non-LJ part for 1000 atoms.
+For the latency, \href{http://www.princeton.edu/~dlustig/dlustig_HPCA13.pdf}{this benchmark}
+reports values of the order of 10$\mu$s, i.e. quite low as well.
+
+So, it \emph{does} make sense to parallelize a single force 
+update step, although it would of course be faster
+to parallelize more.
+
+
+\subsection{GPU - data structures}
+
+For the serial CPU version, it made sense to group data together that
+belongs together conceptually, e.g. positions, velocities, forces and more
+in a \verb|State| class.
+
+For the GPU version we are confronted with the requirement to replicate
+data on the GPU. And since the bandwidth is limited, we want to replicate only
+as much as needed for the particular purpose.
+
+It would seem sad to now start tearing apart the nice class structure,
+just in order to save bandwidth.
+There seems to be an acceptable intermediate solution: 
+Make pointers out of class members that store significant amounts of data.
+This adds the responsibility to deallocate the data behind the pointers,
+but allows to copy the data behind these pointers to the GPU as needed.
+
+Unfortunately, CUDA has no built-in mechanism for performing a 'deep copy'
+between host and device.
+One can accomplish \href{http://stackoverflow.com/questions/15431365/cudamemcpy-segmentation-fault/15435592#15435592}{deep copies manually},
+but in this case one has to copy pointers and the data behind them
+on a member-by-member basis.
+This takes away much of the benefit from an object-oriented
+design at the first place, 
+results in a lot of ugly code and generally seems to be discouraged.
+
+So, sadly, I don't see any alternative here to ugly code.
+Calculating the Lennard-Jones forces is not a mere 'transformation' of
+the position vector, so \verb|thrust| doesn't here and we have to 
+write the kernel ourselves.
+
+The only thing we can do is to make copying vectors from/to device
+a bit easier, by providing member functions that do this.
+
+\subsection{GPU - avoiding race conditions}
+
+
+There is one particular problem that turns up in parallelizing
+the force update. 
+A standard serial implementation makes use of Newton's 3rd law
+and thus for each pair of particles (i,j) updates the forces of both
+particle i and j simultaneously.
+When parallelizing over the index i,
+this brings the danger of race conditions 
+since every thread will, at some point in time, 
+update the force on every particle.
+There are several solutions to this problem:
+\begin{itemize}
+    \item neglect Newton's 3rd law, thus wasting 1/2 of computing time.
+    \item having a private force array for each thread. 
+        This doesn't seem practical, since it would require O($N^2$) memory.
+    \item having two global copies of the force array.
+
+        Each thread updates the force of particle i N times, but the forces of
+        all other particles only once. One could therefore make the first
+        In this scenario, each thread writes
+    \item 
+\end{itemize}<++>
+
+\subsection{GPU - Load balacing}
+When parallelizing the Lennard-Jones loop,
+the loop over $i>j$ results in strongly unbalanced work packages.
+
+Since our parallelization aims for $N\gg \#$ threads,
+this is less of a problem as threads that are already finished
+can 
+Load balancing
+
+
+
+
 \section{Source code}
 
 Since the source code is spread over quite a few files,
